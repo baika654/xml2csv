@@ -1,0 +1,12 @@
+NewQuestion,WR
+ID,CHEM110-234
+Title,This is a written response question
+QuestionText,This is the question text for WR1
+Points,1.000000000
+Difficulty,7
+Image,images/LA1.jpg
+InitialText,This is the initial text
+AnswerKey,This is the answer key text
+Hint,This is the hint text
+Feedback,This is the feedback text
+

@@ -1,0 +1,14 @@
+{
+    "name": "xml2csv",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "run": "node run.js",
+        "debug": "node --inspect run.js",
+        "build": "node build.js"
+    },
+    "dependencies": {
+        "jsdom": "^14.1.0"
+    }
+}

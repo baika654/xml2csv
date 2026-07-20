@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop File Window</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-drop: #f9fafb;
+            --bg-drop-active: #e0e7ff;
+            --border-color: #cbd5e1;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f1f5f9;
+            margin: 0;
+        }
+
+        /* Module Window Container */
+        .upload-card {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .upload-card h2 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-main);
+            font-size: 1.5rem;
+        }
+
+        .upload-card p {
+            margin: 0 0 1.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Drag & Drop Zone Box */
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2.5rem 1.5rem;
+            background-color: var(--bg-drop);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+
+        /* Hover & Dragover active states */
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            background-color: var(--bg-drop-active);
+            border-color: var(--primary);
+        }
+
+        .drop-zone .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .drop-text {
+            display: block;
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .browse-btn {
+            color: var(--primary);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        /* Hide the native system file input visually */
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* File Preview Area */
+        .file-list {
+            margin-top: 1.5rem;
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .file-item .file-icon {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .file-item .file-name {
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="upload-card">
+        <h2>Upload Files</h2>
+        <p>Upload your documents here to process them securely.</p>
+
+        <!-- The interactive drop window element -->
+        <div class="drop-zone" id="dropZone">
+            <span class="icon">📥</span>
+            <span class="drop-text">Drag & drop files here or <span class="browse-btn">browse</span></span>
+
+            <!-- Standard file field mapping for accessibility and fallback clicks -->
+            <input type="file" id="fileInput" class="file-input" multiple>
+        </div>
+
+        <!-- Target area to display files that were dropped/selected -->
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- JS_INJECTION_PLACEHOLDER -->
+    <script>
+
+function downloadStringAsFile(text, filename, contentType = 'text/plain') {
+    // 1. Create a container for the data (Blob)
+    const blob = new Blob([text], { type: contentType });
+    // 2. Generate a secure, unique URL pointing to the browser memory
+    const url = URL.createObjectURL(blob);
+    // 3. Create an in-memory <a> element
+    const link = window.document.createElement('a');
+    const csvFilename = filename.replace(/\.[^/.]+$|$/, `.${"csv"}`)
+    link.href = url;
+    link.download = csvFilename; // Sets the default saved filename
+    // 4. Force the browser to trigger the download prompt
+    window.document.body.appendChild(link);
+    link.click();
+    // 5. Instantly clean up the DOM and release system memory
+    window.document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+const xml2csv = () => {
+    const document = window.document;
+    // document.addEventListener('click', (event) => {
+    //     event.preventDefault();
+    //     console.log('Document was clicked!');
+    //     // 'event.target' refers to the clicked element
+    //     console.log("URL that points to file to download: ", event.target.getAttribute('href'));
+    //     console.log("Name of the file to download: ", event.target.getAttribute('download'));
+    //     const xmlFileName = event.target.getAttribute('download');
+    //     const csvFileName = xmlFileName.replace(/\.[^/.]+$|$/, `.${"csv"}`)
+    //     console.log(xmlFileName.replace(/\.[^/.]+$|$/, `.${"txt"}`));
+    //     fetch(event.target.getAttribute('href')).then((response) => {
+    //         if (response.ok) {
+    //             response.blob().then((blobObject) => {
+    //                 blobObject.arrayBuffer().then((arrayBuffer) => {
+    //                     // Wrap the ArrayBuffer inside a Node.js Buffer
+    //                     const buffer = Buffer.from(arrayBuffer);
+
+    //                     // Write the file synchronously or asynchronously to disk
+    //                     fs.writeFileSync(csvFileName, buffer);
+    //                 });
+    //             });
+    //         }
+    //     });
+    // });
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    // // 1. Create a container for the data (Blob)
+    // const blob = new Blob(["text"], { type: 'text/plain' });
+    // // 2. Generate a secure, unique URL pointing to the browser memory
+    // const url = URL.createObjectURL(blob);
+    // // 3. Create an in-memory <a> element
+    // const link = window.document.createElement('a');
+
+    // Prevent default browser behaviors when files are dragged over the window
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Toggle styling states when item hovers over the designated area
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+    });
+
+    // Capture dropped item payloads
+    dropZone.addEventListener('drop', handleDrop, false);
+    // Capture standard click-and-select file payloads
+    fileInput.addEventListener('change', handleFilesSelect, false);
+
+    function handleDrop(e) {
+        console.log("Dropping files");
+        const dt = e.dataTransfer;
+        const items = dt.items;
+        console.log("Number of files dropped is ", items.length);
+        handleItems(items);
+    }
+
+    function handleFilesSelect(e) {
+        const items = e.target.items;
+        handleItems(items);
+    }
+
+    function handleItems(items) {
+
+        //console.log('Files dropped:', event.dataTransfer.files.length);
+        //console.log('File Name:', event.dataTransfer.files[0].name);
+        //console.log('Items dropped', event.dataTransfer.items.length);
+        //console.log('Item Name:', event.dataTransfer.items[0].name);
+
+        const fileItems = [...items];
+        fileItems.forEach((item) => {
+            let file;
+            if (item.kind === "file") {
+                file = item.getAsFile();
+                //file.text().then((value) => {
+                //    console.log('Item (as file) text is:', value);
+                //    //console.log(value);   // Expected output: "Success!"
+                //});
+                //console.log('Item (as file) text is:', file.text);
+
+
+
+                const oldFileName = file.name;
+                const reader = new FileReader();
+
+                // Define what happens once the file reading completes
+                reader.onload = function (event) {
+                    const xmlString = event.target.result;
+                    console.log("File text reads as: ", xmlString);
+
+                    const result = createStringFromXML(xmlString);
+                    downloadStringAsFile(result, oldFileName);
+
+                };
+
+
+                // Read the file structure as plain text
+                reader.readAsText(file);
+            }
+        });
+    }
+
+    //const dataTransfer = new window.DataTransfer();
+    //const file = new File(['sample content'], 'sample.txt', { type: 'text/plain' });
+    //dataTransfer.items.add(file);
+
+    // if (typeof window !== 'undefined' && !window.DragEvent) {
+    //     class DragEvent extends window.MouseEvent {
+    //         constructor(type, eventInitDict = {}) {
+    //             super(type, eventInitDict);
+    //             this.dataTransfer = eventInitDict.dataTransfer || null;
+    //         }
+    //     }
+    //     global.DragEvent = DragEvent;
+    //     window.DragEvent = DragEvent;
+    // }
+
+    //const mockFile = new File(["*********file content here***************"], "test-file.txt", { type: "text/plain", });
+    //const dropEvent = new window.DragEvent("drop", { bubbles: true, cancelable: true, });
+    //Object.defineProperty(dropEvent, "dataTransfer", { value: { files: [mockFile], items: [{ kind: "file", type: mockFile.type, getAsFile: () => mockFile, },], }, });
+    //dropZone.dispatchEvent(dropEvent);
+
+    const questionDict = { "Long Answer": "WR", "Short Answer": "SA", "Matching": "M", "Multiple Choice": "MC", "True/False": "TF", "Multi-Select": "MS", "Ordering": "O" }
+
+    function createStringFromXML(xmlString) {
+
+
+        const getQuestionData = (question) => {
+            let subString = "";
+            const metadatafields = question.getElementsByTagName("qti_metadatafield");
+            const questionType = metadatafields[1].getElementsByTagName("fieldentry")[0].textContent;
+            switch (questionDict[questionType]) {
+                case "WR":
+                    subString = subString + "InitialText,";
+                    subString = subString + question.getElementsByTagName("initial_text_material")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+                    subString = subString + "\nAnswerKey,";
+                    subString = subString + question.getElementsByTagName("answer_key_material")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+                    subString = subString + "\n";
+                    break;
+                case "SA":
+                    subString = subString + "Answer(s)," + question.getElementsByTagName("varequal")[0].textContent + ",";
+                    if (question.getElementsByTagName("d2l_2p0:answer_is_regexp")[0] === "yes") {
+                        subString = subString + "regex";
+                    }
+                    subString = subString + "\nInputBox," + question.getElementsByTagName("render_fib")[0].getAttribute("rows") + "," + question.getElementsByTagName("render_fib")[0].getAttribute("columns") + "\n"; // Code runs if expression === value2
+                    break;
+                case "MC":
+                    const scores = question.getElementsByTagName("setvar");
+                    const options = question.getElementsByTagName("response_label"); //[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext");
+                    const feedback = question.getElementsByTagName("itemfeedback");
+                    for (let i = 0; i < scores.length; i++) {
+                        subString = subString + "Option," + scores[i].textContent + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                    }
+                    //Scoring is set by <setvar ….>[getText]
+                    //Options              <response_label><flow_mat><material><mattext>[getText]
+                    break;
+                case "MS": {
+                    const rightAnswer = question.getElementsByTagName("respcondition");
+                    const options = question.getElementsByTagName("response_label");
+                    const feedback = question.getElementsByTagName("itemfeedback");
+                    subString = subString + "Scoring,RightAnswers\n";
+                    //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
+                    for (let i = 0; i < options.length; i++) {
+                        subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                    }
+                }
+                    break;
+                case "M":
+                    const choice = question.getElementsByTagName("response_grp");
+                    const renderChoice = choice[0].getElementsByTagName("render_choice");
+                    const match = renderChoice[0].getElementsByTagName("mattext");
+                    const respcondition = question.getElementsByTagName("respcondition");
+                    const matchingMap = {};
+                    subString = subString + "Scoring,EquallyWeighted\n";
+                    for (let i = 0; i < choice.length; i++) {
+                        subString = subString + "Choice," + i + "," + choice[i].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                    }
+                    for (let i = 0; i < choice.length; i++) {
+                        for (let j = 0; j < choice.length; j++) {
+                            if (respcondition[(i * 3) + j].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct") {
+                                matchingMap[j] = i + 1;
+                            }
+                        }
+                    }
+                    for (let i = 0; i < match.length; i++) {
+                        subString = subString + "Match," + matchingMap[i] + "," + match[i].textContent + "\n";
+                    }
+                    break;
+                case "TF":
+                    {
+                        //const rightAnswer = question.getElementsByTagName("respcondition");
+                        const trueFalse = question.getElementsByTagName("response_label");
+                        const scores = question.getElementsByTagName("setvar");
+                        const feedback = question.getElementsByTagName("itemfeedback");
+                        subString = subString + "Scoring,RightMinusWrong\n";
+                        //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
+                        for (let i = 0; i < trueFalse.length; i++) {
+                            subString = subString + trueFalse[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + scores[i].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                        }
+                    }
+                    break;
+                case "O":
+                    {
+                        //const rightAnswer = question.getElementsByTagName("respcondition");
+                        const items = question.getElementsByTagName("response_label");
+                        const feedback = question.getElementsByTagName("itemfeedback");
+                        subString = subString + "Scoring,RightMinusWrong\n";
+                        //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
+                        for (let i = 0; i < items.length; i++) {
+                            subString = subString + "Item," + "," + items[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                        }
+                    }
+                    break;
+                default:
+                    subString = subString + "**********\n**********\n";
+            }
+            return subString;
+        }
+
+
+        // Read the file synchronously and save it into a string variable
+        let outputString = "";
+
+        //const xmlString = fs.readFileSync('quiz_d2l_28212.xml', 'utf8');
+
+        //console.log("XML content successfully loaded into variable:");
+        const parser = new DOMParser();
+
+        // 3. Parse the string into an XML Document object
+        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+        // 4. Query and interact with the XML DOM exactly like regular HTML DOM
+        //const title = xmlDoc.querySelector("title").textContent;
+        //console.log(title); // Output: The Hobbit
+
+        const xpath = '//section[@ident="CONTAINER_SECTION"]';
+        const result = xmlDoc.evaluate(xpath, xmlDoc, null, /*XPathResult.FIRST_ORDERED_NODE_TYPE*/ 9, null);
+        //console.log(result);
+        const questionBlock = result.singleNodeValue;
+
+        /*if (questionBlock) {
+            // Serialize the DOM node back to a string
+            //const serializer = new XMLSerializer();
+            console.log(xmlserializer.serializeToString(questionBlock));
+        }*/
+
+        const questions = questionBlock.getElementsByTagName("item");
+        console.log(questions.length);
+
+
+        // Loop through the matching "item" elements
+        for (let i = 0; i < questions.length; i++) {
+            //const question = questions[i];
+
+            const metadatafields = questions[i].getElementsByTagName("qti_metadatafield");
+            const questionImage = questions[i].getElementsByTagName("matimage")[0].textContent;
+            const difficulty = questions[i].getElementsByTagName("d2l_2p0:difficulty")[0].textContent;
+            const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            const hint = questions[i].getElementsByTagName("hintmaterial")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            const questionText = questions[i].getElementsByTagName("presentation")[0].getElementsByTagName("flow")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            const questionTitle = questions[i].getAttribute("title");
+            const questionType = metadatafields[1].getElementsByTagName("fieldentry")[0].textContent;
+            const weighting = metadatafields[2].getElementsByTagName("fieldentry")[0].textContent;
+            const iD = metadatafields[4].getElementsByTagName("fieldentry")[0].textContent;
+            //console.log("questionTitle:", questionTitle, " questionType :", questionType, " weighting:", weighting, " ID:", iD, " Image:", questionImage, " Difficulty:", difficulty, " Feedback:", feedback, " Hint:", hint, " Question Text:", questionText);
+            outputString = outputString + "NewQuestion," + questionDict[questionType] + "\nID," + iD + "\nTitle," + questionTitle + "\nQuestionText," + questionText + "\n";
+            outputString = outputString + "Points," + weighting + "\nDifficulty," + difficulty + "\nImage," + questionImage + "\n";
+            outputString = outputString + getQuestionData(questions[i]);
+            outputString = outputString + "Hint," + hint + "\nFeedback," + feedback + "\n\n";
+
+        }
+        console.log(outputString);
+        return outputString;
+
+    }
+
+    // link.href = url;
+    // link.download = "test.txt" // filename; // Sets the default saved filename
+    // // 4. Force the browser to trigger the download prompt
+    // window.document.body.appendChild(link);
+    // link.click();
+    // // 5. Instantly clean up the DOM and release system memory
+    // window.document.body.removeChild(link);
+    // URL.revokeObjectURL(url);
+}
+
+xml2csv();
+//createStringFromXML();
+</script>
+
+</body>
+
+</html>

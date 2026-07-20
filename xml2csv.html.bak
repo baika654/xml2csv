@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop File Window</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-drop: #f9fafb;
+            --bg-drop-active: #e0e7ff;
+            --border-color: #cbd5e1;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f1f5f9;
+            margin: 0;
+        }
+
+        /* Module Window Container */
+        .upload-card {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .upload-card h2 {
+            margin: 0 0 0.5rem 0;
+            color: var(--text-main);
+            font-size: 1.5rem;
+        }
+
+        .upload-card p {
+            margin: 0 0 1.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Drag & Drop Zone Box */
+        .drop-zone {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 2.5rem 1.5rem;
+            background-color: var(--bg-drop);
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            position: relative;
+        }
+
+        /* Hover & Dragover active states */
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            background-color: var(--bg-drop-active);
+            border-color: var(--primary);
+        }
+
+        .drop-zone .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .drop-text {
+            display: block;
+            font-size: 1rem;
+            color: var(--text-main);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .browse-btn {
+            color: var(--primary);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        /* Hide the native system file input visually */
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* File Preview Area */
+        .file-list {
+            margin-top: 1.5rem;
+            text-align: left;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .file-item .file-icon {
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .file-item .file-name {
+            flex-grow: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="upload-card">
+        <h2>Upload Files</h2>
+        <p>Upload your documents here to process them securely.</p>
+
+        <!-- The interactive drop window element -->
+        <div class="drop-zone" id="dropZone">
+            <span class="icon">📥</span>
+            <span class="drop-text">Drag & drop files here or <span class="browse-btn">browse</span></span>
+
+            <!-- Standard file field mapping for accessibility and fallback clicks -->
+            <input type="file" id="fileInput" class="file-input" multiple>
+        </div>
+
+        <!-- Target area to display files that were dropped/selected -->
+        <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- JS_INJECTION_PLACEHOLDER -->
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+
+        // Prevent default browser behaviors when files are dragged over the window
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Toggle styling states when item hovers over the designated area
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+        });
+
+        // Capture dropped item payloads
+        dropZone.addEventListener('drop', handleDrop, false);
+        // Capture standard click-and-select file payloads
+        fileInput.addEventListener('change', handleFilesSelect, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+
+        function handleFilesSelect(e) {
+            const files = e.target.files;
+            handleFiles(files);
+        }
+
+        // Render file metadata to the client window
+        function handleFiles(files) {
+            const fileArray = [...files];
+            fileArray.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+
+                fileItem.innerHTML = `
+                    <span class="file-icon">📄</span>
+                    <span class="file-name" title="${file.name}">${file.name}</span>
+                    <span style="color: #64748b; font-size: 0.75rem;">(${(file.size / 1024).toFixed(1)} KB)</span>
+                `;
+                fileList.appendChild(fileItem);
+
+                // OPTIONAL: This is where you would normally attach a Fetch/Axios API method 
+                // to upload the file to your backend server using a FormData payload.
+                console.log(`Ready to process or upload: ${file.name}`);
+            });
+        }
+    </script>
+
+</body>
+
+</html>
