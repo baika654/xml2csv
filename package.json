@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "run": "node run.js",
+        "dev": "node run.js",
         "debug": "node --inspect run.js",
         "build": "node build.js"
     },
