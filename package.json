@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "node run.js",
-        "debug": "node --inspect run.js",
+        "debug": "node run.js",
         "build": "node build.js"
     },
     "dependencies": {

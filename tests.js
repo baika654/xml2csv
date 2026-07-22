@@ -21,12 +21,11 @@ window.document.addEventListener('click', (event) => {
                 blobObject.arrayBuffer().then((arrayBuffer) => {
                     // Wrap the ArrayBuffer inside a Node.js Buffer
                     const buffer = Buffer.from(arrayBuffer);
-                    csvResult("KKKKK");
-                    // Write the file synchronously or asynchronously to disk
-                    //fs.writeFileSync(csvFileName, buffer);
+                    csvResult(buffer.toString("utf8"));                   
                 });
-            });const document = window.document;
-const dropZone = document.getElementById('dropZone');
+            });
+            const document = window.document;
+            const dropZone = document.getElementById('dropZone');
         }
     });
 });
@@ -76,8 +75,18 @@ describe('When long answer quiz is used', async ()=> {
         dropZone.dispatchEvent(dropEvent);
 
         const data = await globalActualPromise;
-        //const actual ="KKKKK";
-        const expected = "KKKKK";
+        const expected = 'NewQuestion,WR\n' +
+     'ID,CHEM110-234\n' +
+     'Title,This is a written response question\n' +
+     'QuestionText,This is the question text for WR1\n' +
+     'Points,1.000000000\n' +
+     'Difficulty,7\n' +
+     'Image,images/LA1.jpg\n' +
+     'InitialText,This is the initial text\n' +
+     'AnswerKey,This is the answer key text\n' +
+     'Hint,This is the hint text\n' +
+     'Feedback,This is the feedback text\n' +
+     '\n';
         assert.strictEqual(data, expected);
     }); 
 });
