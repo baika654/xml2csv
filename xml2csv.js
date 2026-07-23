@@ -223,7 +223,19 @@ const xml2csv = () => {
                     const options = question.getElementsByTagName("response_label"); //[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext");
                     const feedback = question.getElementsByTagName("itemfeedback");
                     for (let i = 0; i < scores.length; i++) {
-                        subString = subString + "Option," + scores[i].textContent + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                        const optionsText = options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+                        //const feedbackText = feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+                        //subString = subString + "Option," + scores[i].textContent + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                        let feedbackText;
+                        if (feedback.length>1) {
+                            feedbackText = feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+                        } else {
+                            feedbackText = "";
+                        }
+                         
+                        //subString = subString + "Option," + scores[i].textContent + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                        subString = subString + "Option," + scores[i].textContent + "," + optionsText + "," + feedbackText + "\n";
+
                     }
                     //Scoring is set by <setvar ….>[getText]
                     //Options              <response_label><flow_mat><material><mattext>[getText]
@@ -327,10 +339,23 @@ const xml2csv = () => {
             //const question = questions[i];
 
             const metadatafields = questions[i].getElementsByTagName("qti_metadatafield");
-            const questionImage = questions[i].getElementsByTagName("matimage")[0].textContent;
+            const questionImageList = questions[i].getElementsByTagName("matimage");
+            let questionImage;
+            if (questionImageList.length>0) {
+                questionImage = questionImageList[0].textContent;
+            } else {
+                questionImage = "";
+            }
             const difficulty = questions[i].getElementsByTagName("d2l_2p0:difficulty")[0].textContent;
             const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
-            const hint = questions[i].getElementsByTagName("hintmaterial")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            //const hint = questions[i].getElementsByTagName("hintmaterial")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            let hint;
+            const hintList = questions[i].getElementsByTagName("hintmaterial");
+            if (hintList.length>0) {
+                hint = hintList[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            } else {
+                hint="";
+            }
             const questionText = questions[i].getElementsByTagName("presentation")[0].getElementsByTagName("flow")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
             const questionTitle = questions[i].getAttribute("title");
             const questionType = metadatafields[1].getElementsByTagName("fieldentry")[0].textContent;
