@@ -346,8 +346,8 @@ const xml2csv = () => {
             } else {
                 questionImage = "";
             }
-            const difficulty = questions[i].getElementsByTagName("d2l_2p0:difficulty")[0].textContent;
-            const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            const difficulty = questions[i].getElementsByTagName("d2l_2p0:difficulty")[0].textContent ?? "";
+            const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent ?? "";
             //const hint = questions[i].getElementsByTagName("hintmaterial")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
             let hint;
             const hintList = questions[i].getElementsByTagName("hintmaterial");
@@ -356,11 +356,11 @@ const xml2csv = () => {
             } else {
                 hint="";
             }
-            const questionText = questions[i].getElementsByTagName("presentation")[0].getElementsByTagName("flow")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
-            const questionTitle = questions[i].getAttribute("title");
+            const questionText = questions[i].getElementsByTagName("presentation")[0].getElementsByTagName("flow")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent ?? "";
+            const questionTitle = questions[i].getAttribute("title") ?? "";
             const questionType = metadatafields[1].getElementsByTagName("fieldentry")[0].textContent;
-            const weighting = metadatafields[2].getElementsByTagName("fieldentry")[0].textContent;
-            const iD = metadatafields[4].getElementsByTagName("fieldentry")[0].textContent;
+            const weighting = metadatafields[2].getElementsByTagName("fieldentry")[0].textContent ?? "";
+            const iD = metadatafields[4].getElementsByTagName("fieldentry")[0].textContent ?? "";
             //console.log("questionTitle:", questionTitle, " questionType :", questionType, " weighting:", weighting, " ID:", iD, " Image:", questionImage, " Difficulty:", difficulty, " Feedback:", feedback, " Hint:", hint, " Question Text:", questionText);
             outputString = outputString + "NewQuestion," + questionDict[questionType] + "\nID," + iD + "\nTitle," + questionTitle + "\nQuestionText," + questionText + "\n";
             outputString = outputString + "Points," + weighting + "\nDifficulty," + difficulty + "\nImage," + questionImage + "\n";
