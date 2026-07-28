@@ -257,6 +257,7 @@ const xml2csv = () => {
                     const answerFeedback = getAnswerFeedback(question);
                     subString = subString + "Scoring,RightAnswers\n";
                     //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
+                    console.log(answerFeedback, ":", answerFeedback.length, ":", options.length, "  RightAnswer:", rightAnswer.length , " Array:" , rightAnswer);
                     for (let i = 0; i < options.length; i++) {
                         let feedbackText;
                         if (answerFeedback.length > 0) {
@@ -264,9 +265,8 @@ const xml2csv = () => {
                         } else {
                             feedbackText = "";
                         }
-                        console.log(answerFeedback, ":", answerFeedback.length, ":", options.length);
                         //subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
-                        subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedbackText + "\n";
+                        subString = subString + "Option," /*+ (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," */ + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedbackText + "\n";
 
                     }
                 }
