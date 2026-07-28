@@ -251,6 +251,7 @@ const xml2csv = () => {
                     //Options              <response_label><flow_mat><material><mattext>[getText]
                     break;
                 case "MS": {
+                    const scores = new Map();
                     const rightAnswer = question.getElementsByTagName("respcondition");
                     const options = question.getElementsByTagName("response_label");
                     const feedback = question.getElementsByTagName("itemfeedback");
@@ -258,6 +259,10 @@ const xml2csv = () => {
                     subString = subString + "Scoring,RightAnswers\n";
                     //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
                     console.log(answerFeedback, ":", answerFeedback.length, ":", options.length, "  RightAnswer:", rightAnswer.length , " Array:" , rightAnswer);
+                    for (let j = 0; j < options.length; j++) {
+                        scores.set(options[j].getAttribute("ident"), { "index": j, "score": 0 });
+                    }
+                    console.log(scores);
                     for (let i = 0; i < options.length; i++) {
                         let feedbackText;
                         if (answerFeedback.length > 0) {
@@ -405,3 +410,29 @@ const xml2csv = () => {
 
 xml2csv();
 //createStringFromXML();
+
+/*
+
+// 1. Your original unsorted Map
+const originalMap = new Map([
+  ['apple', 10],
+  ['banana', 5],
+  ['cherry', 20]
+]);
+
+// 2. Sort by value (Ascending order)
+const sortedAsc = new Map([...originalMap.entries()].sort((a, b) => a[1] - b[1]));
+
+// 3. Sort by value (Descending order)
+const sortedDesc = new Map([...originalMap.entries()].sort((a, b) => b[1] - a[1]));
+
+
+const userMap = new Map([
+  ['userA', { age: 25, name: 'Alice' }],
+  ['userB', { age: 19, name: 'Bob' }],
+  ['userC', { age: 31, name: 'Charlie' }]
+]);
+
+// Sort by the 'age' property inside the value object
+const sortedByAge = new Map([...userMap].sort((a, b) => a[1].age - b[1].age));
+*/
