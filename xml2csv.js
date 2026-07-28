@@ -251,12 +251,17 @@ const xml2csv = () => {
                     //Options              <response_label><flow_mat><material><mattext>[getText]
                     break;
                 case "MS": {
+                    const scores = new Map();
                     const rightAnswer = question.getElementsByTagName("respcondition");
                     const options = question.getElementsByTagName("response_label");
                     const feedback = question.getElementsByTagName("itemfeedback");
                     const answerFeedback = getAnswerFeedback(question);
                     subString = subString + "Scoring,RightAnswers\n";
                     //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
+                    for (let j = 0; j < options.length; j++) {
+                        scores.set(options[j].getAttribute("ident"), { "index": j, "score": 0 });
+                    }
+                    console.log(scores);
                     for (let i = 0; i < options.length; i++) {
                         let feedbackText;
                         if (answerFeedback.length > 0) {
@@ -266,7 +271,7 @@ const xml2csv = () => {
                         }
                         console.log(answerFeedback, ":", answerFeedback.length, ":", options.length);
                         //subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
-                        subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedbackText + "\n";
+                        //subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedbackText + "\n";
 
                     }
                 }
@@ -405,3 +410,29 @@ const xml2csv = () => {
 
 xml2csv();
 //createStringFromXML();
+
+/*
+
+// 1. Your original unsorted Map
+const originalMap = new Map([
+  ['apple', 10],
+  ['banana', 5],
+  ['cherry', 20]
+]);
+
+// 2. Sort by value (Ascending order)
+const sortedAsc = new Map([...originalMap.entries()].sort((a, b) => a[1] - b[1]));
+
+// 3. Sort by value (Descending order)
+const sortedDesc = new Map([...originalMap.entries()].sort((a, b) => b[1] - a[1]));
+
+
+const userMap = new Map([
+  ['userA', { age: 25, name: 'Alice' }],
+  ['userB', { age: 19, name: 'Bob' }],
+  ['userC', { age: 31, name: 'Charlie' }]
+]);
+
+// Sort by the 'age' property inside the value object
+const sortedByAge = new Map([...userMap].sort((a, b) => a[1].age - b[1].age));
+*/
