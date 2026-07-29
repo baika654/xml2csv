@@ -251,28 +251,59 @@ const xml2csv = () => {
                     //Options              <response_label><flow_mat><material><mattext>[getText]
                     break;
                 case "MS": {
-                    const scores = new Map();
-                    const rightAnswer = question.getElementsByTagName("respcondition");
-                    const options = question.getElementsByTagName("response_label");
-                    const feedback = question.getElementsByTagName("itemfeedback");
-                    const answerFeedback = getAnswerFeedback(question);
-                    subString = subString + "Scoring,RightAnswers\n";
-                    //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
-                    console.log(answerFeedback, ":", answerFeedback.length, ":", options.length, "  RightAnswer:", rightAnswer.length , " Array:" , rightAnswer);
-                    for (let j = 0; j < options.length; j++) {
-                        scores.set(options[j].getAttribute("ident"), { "index": j, "score": 0 });
-                    }
-                    console.log(scores);
-                    for (let i = 0; i < options.length; i++) {
-                        let feedbackText;
-                        if (answerFeedback.length > 0) {
-                            feedbackText = answerFeedback[i];
-                        } else {
-                            feedbackText = "";
-                        }
-                        //subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
-                        subString = subString + "Option," /*+ (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," */ + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedbackText + "\n";
+                    const scores = {};
+                    const gradingType = question.getElementsByTagName("d2l_2p0:grading_type")[0].textContent;
+                    console.log("Grading type:", gradingType);
+                    switch (gradingType) {
+                        case "0": {
+                            const rightAnswer = question.getElementsByTagName("respcondition");
+                            const options = question.getElementsByTagName("response_label");
+                            const feedback = question.getElementsByTagName("itemfeedback");
+                            const answerFeedback = getAnswerFeedback(question);
+                            let answerValues;
+                            subString = subString + "Scoring,RightAnswers\n";
+                            //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
+                            console.log(answerFeedback, ":", answerFeedback.length, ":", options.length, "  RightAnswer:", rightAnswer.length , " Array:" , rightAnswer);
+                            for (let j = 0; j < options.length; j++) {
+                                scores[options[j].getAttribute("ident")] = { "index": j, "score": 0 };
+                            }
+                            for (let k=0; k< rightAnswer.length; k++) {
+                                if (rightAnswer[k].getAttribute("title")=="Scoring for the correct answers") {
+                                    answerValues = rightAnswer[k].getElementsByTagName("varequal");
+                                    for (let l=0; l < answerValues.length; l++) {
+                                        if (answerValues[l].parentElement.tagName=="not") {
+                                            console.log("Question ",answerValues[l].textContent," is wrong");
+                                        }  else {
+                                            console.log("Question ",answerValues[l].textContent," is right");
+                                            scores[answerValues[l].textContent].score = 1;
 
+                                        }
+                                    }
+                                }
+                            }
+                            console.log(scores);
+                            for (let i = 0; i < options.length; i++) {
+                                
+                                let feedbackText;
+                                if (answerFeedback.length > 0) {
+                                    feedbackText = answerFeedback[i];
+                                } else {
+                                    feedbackText = "";
+                                }
+                                //subString = subString + "Option," + (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                                subString = subString + "Option," /*+ (rightAnswer[i].getElementsByTagName("setvar")[0].getAttribute("varname") == "D2L_Correct" ? "1" : "0") + "," */ + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedbackText + "\n";
+                            
+                            }
+                        
+                        }
+                        break;
+                        case "1": {}
+                        break;
+                        case "2": {}
+                        break;
+                        case "3": {}
+                        break;
+                        default: {}
                     }
                 }
                     break;
