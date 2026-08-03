@@ -244,8 +244,8 @@ const xml2csv = () => {
                         }
 
                         //subString = subString + "Option," + scores[i].textContent + "," + options[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
-                        subString = subString + "Option," + scores[i].textContent + "," + optionsText + "," + feedbackText + "\n";
-
+                        const optionString = /*subString + */ "Option," + scores[i].textContent + "," + optionsText + "," + feedbackText + "\n";
+                        subString = subString + optionString.replace(/[\r\n]+/gm, "") + "\n";
                     }
                     //Scoring is set by <setvar ….>[getText]
                     //Options              <response_label><flow_mat><material><mattext>[getText]
@@ -405,7 +405,7 @@ const xml2csv = () => {
                 questionImage = "";
             }
             const difficulty = questions[i].getElementsByTagName("d2l_2p0:difficulty")[0].textContent;
-            const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent.replace(/[\r\n]+/gm, "");
             //const hint = questions[i].getElementsByTagName("hintmaterial")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
             let hint;
             const hintList = questions[i].getElementsByTagName("hintmaterial");
@@ -414,7 +414,7 @@ const xml2csv = () => {
             } else {
                 hint = "";
             }
-            const questionText = questions[i].getElementsByTagName("presentation")[0].getElementsByTagName("flow")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
+            const questionText = questions[i].getElementsByTagName("presentation")[0].getElementsByTagName("flow")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent.replace(/[\r\n]+/gm, "");
             const questionTitle = questions[i].getAttribute("title");
             const questionType = metadatafields[1].getElementsByTagName("fieldentry")[0].textContent;
             const weighting = metadatafields[2].getElementsByTagName("fieldentry")[0].textContent;
@@ -427,7 +427,8 @@ const xml2csv = () => {
 
         }
         console.log(outputString);
-        return outputString;
+        const doc = parser.parseFromString(outputString, "text/html");
+        return doc.body.textContent || "";
 
     }
 
