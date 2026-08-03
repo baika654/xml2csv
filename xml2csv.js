@@ -336,10 +336,13 @@ const xml2csv = () => {
                         const trueFalse = question.getElementsByTagName("response_label");
                         const scores = question.getElementsByTagName("setvar");
                         const feedback = question.getElementsByTagName("itemfeedback");
+                        const answerFeedback = getAnswerFeedback(question);
                         subString = subString + "Scoring,RightMinusWrong\n";
                         //subString = subString + rightAnswer.length + "," + options.length + "," + feedback.length + "\n";
                         for (let i = 0; i < trueFalse.length; i++) {
-                            subString = subString + trueFalse[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + scores[i].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                            //subString = subString + trueFalse[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + scores[i].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
+                            subString = subString + trueFalse[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + scores[i].textContent + "," + answerFeedback[i] ?? "" + "\n";
+
                         }
                     }
                     break;
