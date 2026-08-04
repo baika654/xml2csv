@@ -68,6 +68,13 @@ function getAnswerFeedback(node) {
     return answerFeedback;
 }
 
+function getOverallFeedback(node) {
+    const answerFeedbackNodes = [...node.getElementsByTagName("itemfeedback")].filter((fbItems) => fbItems && !fbItems.getAttribute("ident").includes("_IF"));
+    if (answerFeedbackNodes.length ==0 ) return "";
+    return answerFeedbackNodes[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent ?? "";
+    
+}
+
 const xml2csv = () => {
     const document = window.document;
     // document.addEventListener('click', (event) => {
@@ -408,7 +415,8 @@ const xml2csv = () => {
                 questionImage = "";
             }
             const difficulty = questions[i].getElementsByTagName("d2l_2p0:difficulty")[0].textContent;
-            const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent.replace(/[\r\n]+/gm, "");
+            //const feedback = questions[i].getElementsByTagName("itemfeedback")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent.replace(/[\r\n]+/gm, "");
+            const feedback = getOverallFeedback(questions[i]);
             //const hint = questions[i].getElementsByTagName("hintmaterial")[0].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent;
             let hint;
             const hintList = questions[i].getElementsByTagName("hintmaterial");
