@@ -208,7 +208,7 @@ const xml2csv = () => {
     //Object.defineProperty(dropEvent, "dataTransfer", { value: { files: [mockFile], items: [{ kind: "file", type: mockFile.type, getAsFile: () => mockFile, },], }, });
     //dropZone.dispatchEvent(dropEvent);
 
-    const questionDict = { "Long Answer": "WR", "Short Answer": "SA", "Matching": "M", "Multiple Choice": "MC", "True/False": "TF", "Multi-Select": "MS", "Ordering": "O" }
+    const questionDict = { "Long Answer": "WR", "Short Answer": "SA", "Matching": "M", "Multiple Choice": "MC", "True/False": "TF", "Multi-Select": "MS", "Ordering": "O", "Fill in the Blanks":"FIB" }
 
     function createStringFromXML(xmlString) {
 
@@ -363,6 +363,11 @@ const xml2csv = () => {
                         for (let i = 0; i < items.length; i++) {
                             subString = subString + "Item," + "," + items[i].getElementsByTagName("flow_mat")[0].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "," + feedback[i + 1].getElementsByTagName("material")[0].getElementsByTagName("mattext")[0].textContent + "\n";
                         }
+                    }
+                    break;
+                case "FIB":
+                    {
+                     subString = subString + "Fill in the blanks\nFill in the blanks\n";   
                     }
                     break;
                 default:
